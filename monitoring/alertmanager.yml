@@ -12,4 +12,4 @@ receivers:
           region: us-east-1
         send_resolved: true
         subject: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
-        message: '{{ range .Alerts }}{{ .Annotations.summary }} {{ end }}'
+        message: '{{ .Status | toUpper }}: {{ range .Alerts }}{{ .Labels.alertname }} - {{ .Annotations.summary }}. {{ end }}'
