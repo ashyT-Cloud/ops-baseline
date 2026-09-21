@@ -7,7 +7,7 @@ route:
 receivers:
   - name: sns
     sns_configs:
-      - topic_arn:arn:aws:sns:us-east-1:487054650859:ops-baseline-alerts
+      - topic_arn: "arn:aws:sns:us-east-1:487054650859:ops-baseline-alerts"
         sigv4:
           region: us-east-1
         send_resolved: true
