@@ -1,0 +1,2 @@
+# Nightly Postgres backup to S3 at 02:00 UTC, with SNS alert on failure
+0 2 * * * /home/ubuntu/ops-baseline/scripts/backup.sh >> /home/ubuntu/backup.log 2>&1 || aws sns publish --region us-east-1 --topic-arn <your-topic-arn> --subject "[FAILED] nightly backup" --message "backup.sh failed"
