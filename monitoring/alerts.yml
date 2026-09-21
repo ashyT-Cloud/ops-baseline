@@ -1,0 +1,26 @@
+groups:
+  - name: ops-baseline
+    rules:
+      - alert: AppDown
+        expr: probe_success{job="app-health"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "App health check failing for over 1 minute"
+
+      - alert: HighDiskUsage
+        expr: (1 - node_filesystem_avail_bytes{mountpoint="/",fstype="ext4"} / node_filesystem_size_bytes{mountpoint="/",fstype="ext4"}) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Root disk is more than 80% full"
+
+      - alert: HighMemoryUsage
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Less than 10% of memory available"

@@ -1,0 +1,15 @@
+route:
+  receiver: sns
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+
+receivers:
+  - name: sns
+    sns_configs:
+      - topic_arn:arn:aws:sns:us-east-1:487054650859:ops-baseline-alerts
+        sigv4:
+          region: us-east-1
+        send_resolved: true
+        subject: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+        message: '{{ range .Alerts }}{{ .Annotations.summary }} {{ end }}'
