@@ -99,6 +99,10 @@ resource "aws_sns_topic_subscription" "email" {
 
 
 # ---------- IAM: instance role, least privilege ----------
+data "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+}
+
 data "aws_iam_policy_document" "assume" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -106,6 +110,31 @@ data "aws_iam_policy_document" "assume" {
     principals {
       type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "github_deploy_assume" {
+  statement {
+    effect = "Allow"
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:ashyT-Cloud/ops-baseline:ref:refs/heads/main"]
     }
   }
 }
@@ -125,6 +154,37 @@ data "aws_iam_policy_document" "ec2" {
     actions   = ["sns:Publish"]
     resources = [aws_sns_topic.alerts.arn]
   }
+}
+
+resource "aws_iam_role" "github_deploy" {
+  name               = "ops-baseline-github-deploy"
+  assume_role_policy = data.aws_iam_policy_document.github_deploy_assume.json
+}
+
+data "aws_iam_policy_document" "github_deploy" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ssm:SendCommand",
+      "ssm:GetCommandInvocation"
+    ]
+
+    resources = [
+      aws_instance.app.arn
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "github_deploy" {
+  name   = "ops-baseline-github-deploy"
+  role   = aws_iam_role.github_deploy.id
+  policy = data.aws_iam_policy_document.github_deploy.json
+}
+
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_role" "ec2" {
