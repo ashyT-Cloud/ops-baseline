@@ -51,7 +51,9 @@ def save_calculation(operation, a, b, result):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO calculations (operation, a, b, result) VALUES (%s, %s, %s, %s)",
+        "INSERT INTO calculations"
+        "(operation, a, b, result)"
+        " VALUES (%s, %s, %s, %s)",
         (operation, a, b, result)
     )
     conn.commit()
