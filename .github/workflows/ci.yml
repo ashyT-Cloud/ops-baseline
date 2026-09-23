@@ -149,6 +149,8 @@ jobs:
           echo "id=$IID" >> "$GITHUB_OUTPUT"
 
       - name: Deploy via SSM
+        env:
+          INSTANCE_ID: ${{ vars.DEPLOY_INSTANCE_ID }}
         run: |
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ steps.instance.outputs.id }}" \
@@ -162,7 +164,28 @@ jobs:
             --output text)
 
           echo "SSM Command ID: $COMMAND_ID"
+          for i in {1..30}; do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$INSTANCE_ID" \
+              --query 'Status' \
+              --output text)
 
-          aws ssm wait command-executed \
-            --command-id "$COMMAND_ID" \
-            --instance-id "${{ steps.instance.outputs.id }}"
+            echo "Deployment status: $STATUS"
+
+            case "$STATUS" in
+              Success)
+                echo "Deployment completed successfully."
+                exit 0
+                ;;
+              Failed|Cancelled|TimedOut)
+                echo "Deployment failed with status: $STATUS"
+                exit 1
+                ;;
+            esac
+
+            sleep 5
+          done
+
+          echo "Deployment timed out."
+          exit 1
