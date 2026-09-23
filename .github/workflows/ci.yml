@@ -148,6 +148,7 @@ jobs:
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
+              "set -e",
               "cd /home/ubuntu/ops-baseline",
               "git pull",
               "docker compose up -d --build app"
