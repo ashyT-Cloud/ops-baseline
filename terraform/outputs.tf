@@ -9,3 +9,7 @@ output "backup_bucket" {
 output "sns_topic_arn" {
   value = aws_sns_topic.alerts.arn
 }
+
+output "app_instance_id" {
+  value = aws_instance.app.id
+}
