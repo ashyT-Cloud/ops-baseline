@@ -118,11 +118,16 @@ data "aws_iam_policy_document" "github_deploy_assume" {
   statement {
     effect = "Allow"
 
-    actions = ["sts:AssumeRoleWithWebIdentity"]
+    actions = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
 
     principals {
-      type        = "Federated"
-      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
+      type = "Federated"
+
+      identifiers = [
+        data.aws_iam_openid_connect_provider.github.arn
+      ]
     }
 
     condition {
@@ -132,9 +137,11 @@ data "aws_iam_policy_document" "github_deploy_assume" {
     }
 
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:ashyT-Cloud/ops-baseline:ref:refs/heads/main"]
+      values = [
+        "repo:ashyT-Cloud@202896792/ops-baseline@1379245344:ref:refs/heads/main"
+      ]
     }
   }
 }
@@ -166,13 +173,23 @@ data "aws_iam_policy_document" "github_deploy" {
     effect = "Allow"
 
     actions = [
-      "ssm:SendCommand",
-      "ssm:GetCommandInvocation"
+      "ssm:SendCommand"
     ]
 
     resources = [
-      aws_instance.app.arn
+      aws_instance.app.arn,
+      "arn:aws:ssm:${var.aws_region}:*:document/AWS-RunShellScript"
     ]
+  }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ssm:GetCommandInvocation"
+    ]
+
+    resources = ["*"]
   }
 }
 
