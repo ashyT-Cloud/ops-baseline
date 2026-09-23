@@ -139,14 +139,6 @@ jobs:
           role-to-assume: arn:aws:iam::487054650859:role/ops-baseline-github-deploy
           aws-region: us-east-1
 
-      - name: Get instance ID
-        id: instance
-        run: |
-          IID=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=ops-baseline" "Name=instance-state-name,Values=running" \
-            --query "Reservations[0].Instances[0].InstanceId" \
-            --output text)
-          echo "id=$IID" >> "$GITHUB_OUTPUT"
 
       - name: Deploy via SSM
         env:
