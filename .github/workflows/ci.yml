@@ -145,7 +145,7 @@ jobs:
           INSTANCE_ID: ${{ vars.DEPLOY_INSTANCE_ID }}
         run: |
           COMMAND_ID=$(aws ssm send-command \
-            --instance-ids "${{ steps.instance.outputs.id }}" \
+            --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "cd ~/ops-baseline",
